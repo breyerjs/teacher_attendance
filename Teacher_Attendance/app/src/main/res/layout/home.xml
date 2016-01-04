@@ -21,4 +21,18 @@
 
     </Spinner>
 
+    <EditText
+        android:id="@+id/type_pw"
+        android:layout_width="200dp"
+        android:layout_height="75dp"
+        android:layout_below="@+id/select_teacher"
+        android:hint="@string/enter_password"/>
+
+    <Button
+        android:id="@+id/submit_button"
+        android:layout_width="300dp"
+        android:layout_height="75dp"
+        android:layout_below="@+id/type_pw"
+        android:text="@string/submit_button"/>
+
 </RelativeLayout>

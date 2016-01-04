@@ -62,7 +62,7 @@ public class Home extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 // your code here
-                
+
             }
 
             @Override

@@ -1,7 +1,10 @@
 <resources>
-    <string name="app_name">Teacher_Attendance</string>
+    <string name="app_name">Teacher Attendance</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <string name="submit_button">Submit</string>
+    <string name="enter_password">Enter Password Here</string>
 
 </resources>
