@@ -8,6 +8,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 public class Home extends AppCompatActivity {
 
@@ -16,10 +19,16 @@ public class Home extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
 
-        String[] initialTeacherArray = setSchoolSpinner();
+        RequestsToolkit tools = new RequestsToolkit();
+
+        //textview here for testing. Spinner for changing
+        Spinner schoolsSpinner = (Spinner) findViewById(R.id.select_school);
+        tools.fetchSchoolsAndTeachers(this, schoolsSpinner);
+
+        String[] teacherArray = setSchoolSpinner();
 
         //set initially--changes as schoolSpinner changes
-        setTeacherSpinner(initialTeacherArray);
+        setTeacherSpinner(teacherArray);
 
     }
 
@@ -50,8 +59,12 @@ public class Home extends AppCompatActivity {
         //this allows initial populaiton of the teacher spinner
 
         //Set the Schools spinner
+        RequestsToolkit tools = new RequestsToolkit();
+
         Spinner schoolSpinner = (Spinner) findViewById(R.id.select_school);
-        String[] schoolsArray = {"Home", "Brandeis"};
+        //get the keys of Schools and Teachers to get the shcools list
+        ArrayList<String> schoolsArray = tools.getJSONKeys(InternalStorage.schoolsAndTeachers);
+        //create and set the adapter
         ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, schoolsArray);
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         schoolSpinner.setAdapter(spinnerArrayAdapter);
