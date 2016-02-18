@@ -2,6 +2,7 @@ package assignment2.teacher_attendance;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,6 +11,10 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Home extends AppCompatActivity {
@@ -21,14 +26,16 @@ public class Home extends AppCompatActivity {
 
         RequestsToolkit tools = new RequestsToolkit();
 
-        //textview here for testing. Spinner for changing
+        //Spinner for changing
         Spinner schoolsSpinner = (Spinner) findViewById(R.id.select_school);
-        tools.fetchSchoolsAndTeachers(this, schoolsSpinner);
+        Spinner teacherSpinner = (Spinner) findViewById(R.id.select_teacher);
+        tools.fetchSchoolsAndTeachers(this, schoolsSpinner, teacherSpinner);
 
-        String[] teacherArray = setSchoolSpinner();
+        setSpinners();
 
-        //set initially--changes as schoolSpinner changes
-        setTeacherSpinner(teacherArray);
+        //set initially in setSpinners
+        //String[] pleaseSelect = {"Select Your Name"};
+        //setTeacherSpinner(pleaseSelect);
 
     }
 
@@ -54,16 +61,17 @@ public class Home extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public String[] setSchoolSpinner(){
+    public void setSpinners(){
         //Returns the array of teachers for the first item in the spinner
-        //this allows initial populaiton of the teacher spinner
+        //this allows initial population of the teacher spinner
 
         //Set the Schools spinner
         RequestsToolkit tools = new RequestsToolkit();
 
         Spinner schoolSpinner = (Spinner) findViewById(R.id.select_school);
-        //get the keys of Schools and Teachers to get the shcools list
-        ArrayList<String> schoolsArray = tools.getJSONKeys(InternalStorage.schoolsAndTeachers);
+        //get the keys of Schools and Teachers to get the schools list
+        final ArrayList<String> schoolsArray = tools.getJSONKeys(InternalStorage.schoolsAndTeachers);
+
         //create and set the adapter
         ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, schoolsArray);
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -74,23 +82,34 @@ public class Home extends AppCompatActivity {
         schoolSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                // your code here
 
+                try {
+                    ArrayAdapter<String> schoolSpinnerAdapter = (ArrayAdapter<String>) parentView.getAdapter();
+                    String school = schoolSpinnerAdapter.getItem(position);
+                    if (school.equals("Loading..."))
+                        return;
+                    RequestsToolkit tools = new RequestsToolkit();
+                    Log.d("School", school);
+                    JSONArray teacherJSONArray = InternalStorage.schoolsAndTeachers.getJSONArray(school);
+                    ArrayList<String> teacherArrayList = tools.convertJSONarrayToArrayList(teacherJSONArray);
+                    //String [] teacherArray = new String[teacherArrayList.size()];
+                    //teacherArrayList.toArray(teacherArray);
+
+                    setTeacherSpinner(teacherArrayList);
+
+                }catch (JSONException e) {Log.d("Json Exception", "In setSchoolSpinner");}
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
-                // your code here
+
             }
 
         });
 
-        //is this necessary?
-        String[] testTeacherArray = {"Jackson Breyer", "Rachelle Sarmiento"};
-        return testTeacherArray;
     }
 
-    public void setTeacherSpinner(String[] teacherArray){
+    public void setTeacherSpinner(ArrayList<String> teacherArray){
         // use this for setting the teacher spinner:
         Spinner teacherSpinner = (Spinner) findViewById(R.id.select_teacher);
         ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, teacherArray);

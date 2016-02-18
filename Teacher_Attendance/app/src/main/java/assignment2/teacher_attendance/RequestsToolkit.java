@@ -14,6 +14,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,7 +26,7 @@ import java.util.List;
  * Created by Jackson Breyer on 1/4/2016.
  */
 public class RequestsToolkit {
-    public void fetchSchoolsAndTeachers(Context context, final Spinner schoolSpinner){
+    public void fetchSchoolsAndTeachers(final Context context, final Spinner schoolSpinner, final Spinner teacherSpinner){
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(context);
@@ -50,15 +51,29 @@ public class RequestsToolkit {
 
                         @Override
                         public void onResponse(JSONObject response) {
-                            InternalStorage.schoolsAndTeachers = response;
-                            ArrayAdapter<String> schoolSpinnerAdapter = (ArrayAdapter<String>) schoolSpinner.getAdapter();
+                            try {
+                                InternalStorage.schoolsAndTeachers = response;
+                                ArrayAdapter<String> schoolSpinnerAdapter = (ArrayAdapter<String>) schoolSpinner.getAdapter();
 
-                            //clear and reset the array
-                            schoolSpinnerAdapter.clear();
-                            for (String school : getJSONKeys(InternalStorage.schoolsAndTeachers)){
-                                schoolSpinnerAdapter.add(school);
-                            }
-                            schoolSpinnerAdapter.notifyDataSetChanged();
+                                //clear and reset the schools
+                                schoolSpinnerAdapter.clear();
+                                for (String school : getJSONKeys(InternalStorage.schoolsAndTeachers)) {
+                                    schoolSpinnerAdapter.add(school);
+                                }
+
+                                //set teachers
+                                JSONArray teacherJSONArray = InternalStorage.schoolsAndTeachers.getJSONArray(schoolSpinnerAdapter.getItem(0));
+                                ArrayList<String> teacherArray = convertJSONarrayToArrayList(teacherJSONArray);
+                                ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, teacherArray);
+                                spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                teacherSpinner.setAdapter(spinnerArrayAdapter);
+
+
+                                //teachers recreates the adapter, but schools CHANGES the adapter, so we
+                                // notify it that it's been chaged
+                                schoolSpinnerAdapter.notifyDataSetChanged();
+
+                            } catch (JSONException e){Log.d("JSON Exception", "jsonnnnn");}
                         }
                     }, new Response.ErrorListener() {
 
@@ -89,6 +104,20 @@ public class RequestsToolkit {
         }
 
         return keysList;
+    }
+
+    public ArrayList<String> convertJSONarrayToArrayList(JSONArray jsarr){
+        try {
+            ArrayList<String> ret = new ArrayList<String>();
+            if (jsarr != null) {
+                for (int i = 0; i < jsarr.length(); i++) {
+                    ret.add(jsarr.get(i).toString());
+                }
+            }
+            return ret;
+        } catch (JSONException e ){}
+        //should never get here
+        return null;
     }
 
 }
