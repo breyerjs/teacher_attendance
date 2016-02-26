@@ -33,6 +33,7 @@
         android:layout_width="300dp"
         android:layout_height="75dp"
         android:layout_below="@+id/type_pw"
+        android:onClick="submitAttendance"
         android:text="@string/submit_button"/>
 
 </RelativeLayout>

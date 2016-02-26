@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -117,4 +118,30 @@ public class Home extends AppCompatActivity {
         teacherSpinner.setAdapter(spinnerArrayAdapter);
 
     }
+
+    public void submitAttendance(View v){
+        //when user presses the submit button
+
+        RequestsToolkit tools = new RequestsToolkit();
+        //school
+        Spinner schoolSpinner = (Spinner) findViewById(R.id.select_school);
+        String schoolName = schoolSpinner.getSelectedItem().toString();
+        Log.d("school", schoolName);
+        //teacher
+        Spinner teacherSpinner  = (Spinner) findViewById(R.id.select_teacher);
+        String f_name = teacherSpinner.getSelectedItem().toString().split(" ")[0];
+        String l_name = teacherSpinner.getSelectedItem().toString().split(" ")[1];
+        Log.d("f_name", f_name);
+        Log.d("L_name", l_name);
+        //password
+        EditText password_field = (EditText) findViewById(R.id.type_pw);
+        String entered_password = password_field.getText().toString();
+        Log.d("pw", entered_password);
+
+        tools.submitAttendance(this, schoolName, entered_password, f_name, l_name);
+
+
+    }
+
+
 }

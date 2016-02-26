@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -27,6 +28,8 @@ import java.util.List;
  */
 public class RequestsToolkit {
     public void fetchSchoolsAndTeachers(final Context context, final Spinner schoolSpinner, final Spinner teacherSpinner){
+        //populates InternalStorage:: schoolsAndTeachers
+        //called on starting Home
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(context);
@@ -35,8 +38,6 @@ public class RequestsToolkit {
 
         /*
             Add the password to the request
-            create a textview to pass in, for testing
-
          */
 
         //make the json request
@@ -119,5 +120,130 @@ public class RequestsToolkit {
         //should never get here
         return null;
     }
+
+    public void submitAttendance(final Context context, String schoolName, String enteredPassword,
+                                 String f_name, String l_name){
+        checkPasswordCorrect(context, schoolName, enteredPassword,f_name, l_name);
+    }
+
+    public boolean checkPasswordCorrect(final Context context,
+                                        final String schoolName,
+                                        final String enteredPassword,
+                                        final String f_name,
+                                        final String l_name){
+        // Calls server and asks if the password is correct. If it is
+        // makes a POST request to log the attendance
+
+        //call from Home
+
+        try {
+            // Instantiate the RequestQueue.
+            RequestQueue queue = Volley.newRequestQueue(context);
+            String url = "https://teacher-attendance.herokuapp.com/tabackend/password_correct";
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("password", "stayinschool");
+            requestBody.put("entered_password", enteredPassword);
+            requestBody.put("school_name", schoolName);
+            requestBody.put("f_name", f_name);
+            requestBody.put("l_name", l_name);
+
+            JsonObjectRequest jsonRequest = new JsonObjectRequest
+                    (Request.Method.POST, url, requestBody, new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                //if correct, post data
+                                //if not correct, TOAST that PW is incorrect
+                                Log.d("Pw Verified? ", Boolean.toString(response.getBoolean("password_correct")));
+                                if (! response.getBoolean("password_correct"))
+                                    Toast.makeText(context, "The password is incorrect", Toast.LENGTH_LONG).show();
+
+                                //since the password was correct, proceed to submitting attendance.
+                                else{
+                                    postSubmission(context, schoolName, enteredPassword, f_name, l_name);
+                                }
+
+
+                                //Now,
+
+
+
+                            } catch (JSONException  e){Log.d("Json issues", e.toString());}
+
+                        }
+                    }, new Response.ErrorListener() {
+
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            // TODO Auto-generated method stub
+                            Log.d("error", error.toString());
+                        }
+                    });
+
+
+            // Add the request to the RequestQueue.
+            queue.add(jsonRequest);
+        }catch(JSONException e) {Log.d("JsonIssue", e.toString());}
+
+    return true;
+    }
+
+    public boolean postSubmission(final Context context,
+                                        final String schoolName,
+                                        final String enteredPassword,
+                                        final String f_name,
+                                        final String l_name){
+        // Once the password is verified, this is called to send a POST request to the
+        //  server.
+
+
+        try {
+            // Instantiate the RequestQueue.
+            RequestQueue queue = Volley.newRequestQueue(context);
+            String url = "https://teacher-attendance.herokuapp.com/tabackend/submit_attendance";
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("password", "stayinschool");
+            requestBody.put("entered_password", enteredPassword);
+            requestBody.put("school_name", schoolName);
+            requestBody.put("phone_number", "7035551891");
+            //todo FIXME! Add GPS stuff
+            requestBody.put("near_school", true);
+            requestBody.put("f_name", f_name);
+            requestBody.put("l_name", l_name);
+
+            JsonObjectRequest jsonRequest = new JsonObjectRequest
+                    (Request.Method.POST, url, requestBody, new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                //if correct, post data
+                                //if not correct, TOAST that PW is incorrect
+                                if (! response.getBoolean("submission_successful"))
+                                    Toast.makeText(context, "There was an error", Toast.LENGTH_LONG).show();
+                                Log.d("Submission? ", Boolean.toString(response.getBoolean("submission_successful")));
+                            } catch (JSONException  e){Log.d("Json issues", e.toString());}
+
+                        }
+                    }, new Response.ErrorListener() {
+
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            // TODO Auto-generated method stub
+                            Log.d("error", error.toString());
+                        }
+                    });
+
+
+            // Add the request to the RequestQueue.
+            queue.add(jsonRequest);
+        }catch(JSONException e) {Log.d("JsonIssue", e.toString());}
+
+        return true;
+    }
+
 
 }
